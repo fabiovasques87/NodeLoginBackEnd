@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 
 const server = express();
-const port = 5000;
+const port = 7000;
 
 server.use(express.json());
 server.use(cookieParser());
@@ -13,7 +13,8 @@ server.use(cookieParser());
 
 import cors from 'cors';
 
-const tokenExpirySeconds = 10; 
+const tokenExpirySeconds = 10;
+const saltRounds = 10; 
 const maxAge = tokenExpirySeconds * 1000; // Converta para milissegundos
 
 server.use(cors());
@@ -70,6 +71,50 @@ server.post('/login', async (req, res) => {
     return res.status(500).json({ message: 'Erro de servidor' });
   }
 });
+
+
+
+server.post('/cadastrar-usuario', async (req, res) => {
+
+  const { username, password, funcaoId } = req.body;
+
+  try {
+
+     // Hash da senha
+     const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // if (!username || !password || !funcaoId) {
+    //   return res.status(400).json({ error: 'Dados incompletos. Certifique-se de fornecer username, password e funcaoId.' });
+    // }
+
+      // Verifica se o usuário já existe
+      const existingUser = await prisma.user.findUnique({
+        where: {
+          username,
+        },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ error: 'Usuário já existe.' });
+      }  
+
+    // Crie o usuário
+    const user = await prisma.user.create({
+      data: {
+        username,
+        password: hashedPassword,
+      },
+    });
+
+    // Associe a função ao usuário
+   
+    res.status(201).json({user});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao cadastrar usuário.' });
+  }
+});
+
 
 
 
