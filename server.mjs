@@ -77,7 +77,7 @@ server.post('/login', async (req, res) => {
 server.post('/cadastrar-usuario', async (req, res) => {
 
   const { username, password, funcaoId } = req.body;
-
+  console.log('registros recebidos do servidor', username, password, funcaoId);
   try {
 
      // Hash da senha
@@ -98,6 +98,8 @@ server.post('/cadastrar-usuario', async (req, res) => {
         return res.status(400).json({ error: 'Usuário já existe.' });
       }  
 
+      
+
     // Crie o usuário
     const user = await prisma.user.create({
       data: {
@@ -106,7 +108,16 @@ server.post('/cadastrar-usuario', async (req, res) => {
       },
     });
 
+ //converte o funcaoId
+    const funcaoIdNumber = parseInt(funcaoId, 10);
+
     // Associe a função ao usuário
+    await prisma.userFuncao.create({
+      data: {
+        userId: user.id,
+        funcaoId:funcaoIdNumber,
+      },
+    });
    
     res.status(201).json({user});
   } catch (error) {
