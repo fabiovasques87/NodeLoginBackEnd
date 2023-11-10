@@ -257,6 +257,26 @@ server.get('/cadastro', (req, res) => {
   });
 });
 
+//get users
+server.get('/users', async (req, res) => {
+  try {
+    const usuarios = await prisma.user.findMany({
+      include: {
+        userFuncao: {
+          include: {
+            funcao: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json(usuarios);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao obter usuários.' });
+  }
+});
+
 server.listen(port, () => {
   console.log(`Servidor está rodando na porta ${port}`);
 });
