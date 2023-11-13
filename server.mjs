@@ -1,4 +1,5 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
@@ -10,6 +11,8 @@ const port = 7000;
 server.use(express.json());
 server.use(cookieParser());
 
+// Configurando o middleware de análise de corpo para JSON
+server.use(bodyParser.json());
 
 import cors from 'cors';
 
@@ -77,7 +80,7 @@ server.post('/login', async (req, res) => {
 server.post('/cadastrar-usuario', async (req, res) => {
 
   const { username, password, funcaoId } = req.body;
-  console.log('registros recebidos do servidor', username, password, funcaoId);
+  // console.log('registros recebidos do servidor', username, password, funcaoId);
   try {
 
      // Hash da senha
@@ -287,6 +290,33 @@ server.get('/users', async (req, res) => {
     res.status(500).json({ error: 'Erro ao obter usuários.' });
   }
 });
+
+
+server.put('/atualizar-usuario/:userId', async (req, res) => {
+  const userId = parseInt(req.params.userId, 10);
+  // const {userId} = req.body;
+  const { funcaoId } = req.body;
+
+  try {
+    const updatedUserFuncao = await prisma.userFuncao.updateMany({
+      where: {
+        userId
+      },
+      data: {
+        funcaoId
+      },
+    });
+
+    console.log('UsuárioFuncao atualizado:', updatedUserFuncao);
+    res.status(200).json(updatedUserFuncao);
+    // console.log(userId);
+    // console.log(funcaoId);
+  } catch (error) {
+    console.error('Erro ao atualizar usuárioFuncao', error);
+    res.status(500).json({ error: 'Erro ao atualizar usuárioFuncao.' });
+  }
+});
+
 
 server.listen(port, () => {
   console.log(`Servidor está rodando na porta ${port}`);
